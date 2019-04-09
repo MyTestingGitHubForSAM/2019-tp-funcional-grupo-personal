@@ -122,3 +122,15 @@ linea4 = LineaDeDefensa{
 plantas = [peaShooter],
 zombies = [zombieBase]
 }
+
+agregarPlantaALinea planta linea = LineaDeDefensa{
+plantas = plantas linea ++ [planta],
+zombies = zombies linea
+}
+
+agregarZombieALinea zombie linea = LineaDeDefensa{
+plantas = plantas linea,
+zombies = zombies linea ++ [zombie]
+}
+
+--estaEnPeligro :: LineaDeDefensa -> Bool
