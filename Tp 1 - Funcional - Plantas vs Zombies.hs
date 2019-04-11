@@ -123,14 +123,62 @@ plantas = [peaShooter],
 zombies = [zombieBase]
 }
 
+--3a--
+agregarPlantaALinea :: Planta -> LineaDeDefensa -> LineaDeDefensa
 agregarPlantaALinea planta linea = LineaDeDefensa{
 plantas = plantas linea ++ [planta],
 zombies = zombies linea
 }
 
+agregarZombieALinea :: Zombie -> LineaDeDefensa -> LineaDeDefensa
 agregarZombieALinea zombie linea = LineaDeDefensa{
 plantas = plantas linea,
 zombies = zombies linea ++ [zombie]
 }
 
---estaEnPeligro :: LineaDeDefensa -> Bool
+--3b--
+estaEnPeligro :: LineaDeDefensa -> Bool
+estaEnPeligro linea = (poderTotalDeAtaqueDe linea < poderTotalDeMordiscosDe linea )|| (sonTodosZombiesPeligrososDe linea && hayUnZombieEn linea )
+
+poderTotalDeAtaqueDe :: LineaDeDefensa -> Int
+poderTotalDeAtaqueDe linea = sum.(map poderAtaque) $ (plantas linea)
+
+poderTotalDeMordiscosDe :: LineaDeDefensa -> Int
+poderTotalDeMordiscosDe linea = sum.(map daño) $ (zombies linea)
+
+sonTodosZombiesPeligrososDe :: LineaDeDefensa -> Bool
+sonTodosZombiesPeligrososDe linea = all esPeligroso (zombies linea)
+
+hayUnZombieEn :: LineaDeDefensa -> Bool
+hayUnZombieEn linea = (>0).length $ (zombies linea)
+
+--3c--
+necesitaSerDefendida :: LineaDeDefensa -> Bool
+necesitaSerDefendida linea = all ((=="Proveedora").especialidad) (plantas linea)
+
+--3d--
+--Qué pasaría al consultar si una línea está en peligro si hubiera una cantidad infinita de zombies bases en la misma?
+--Se entiende que el poder total de daño de los Zombies siempre seria mayor al poder de Ataque de las plantas, lo que significaría que la linea estaría 
+--en peligro siempre, sin importar el valor de Poder de Ataque de las plantas
+
+--Qué pasaría al consultar si una línea con una cantidad infinita de PeaShooters necesita ser defendida? ¿Y con una cantidad infinita de Sunflowers?
+--RTA: Con una cantidad infinita de PeaShooters los puntos de Ataque siempre superarian a los mordiscos, y la linea nunca estaría en peligro.
+--RTA2: Con una cantidad infinita de SunFlowers los puntos de Ataque se mantendrian en 0 y la linea estaría en peligro si hay al menos un zombie en la misma.
+
+--4a--
+lineaMixta :: LineaDeDefensa -> Bool
+lineaMixta linea = esMixta (plantas linea) && lineaTiene2Plantas (plantas linea)
+
+--Verifico si la lista de plantas es mixta
+esMixta :: [Planta] -> Bool
+esMixta [x] = True
+esMixta [] = True
+esMixta (x:y:ys)
+ |especialidad x == especialidad y = False
+ |otherwise = esMixta (y:ys)
+
+--Verifico si la lista tiene al menos 2 plantas
+lineaTiene2Plantas :: [Planta] -> Bool
+lineaTiene2Plantas (x:y:ys) = True
+lineaTiene2Plantas [x] = False
+lineaTiene2Plantas [] = False
