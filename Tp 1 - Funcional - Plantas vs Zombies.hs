@@ -1,35 +1,35 @@
 --Modelado genérico del tipo Planta -- Puedo llegar al mismo resultado con multiples consturctores?
 data Planta = Planta{
 puntosVida :: Int,
-cantSoles :: Int,
+solesProducidos :: Int,
 poderAtaque :: Int
 } deriving (Show,Eq)
 
 --peaShooter
 peaShooter = Planta {
 puntosVida = 5,
-cantSoles = 0,
+solesProducidos = 0,
 poderAtaque = 2
 }
 
 --Repeater
 repeater = Planta {
 puntosVida = puntosVida peaShooter,
-cantSoles = cantSoles peaShooter,
+solesProducidos = solesProducidos peaShooter,
 poderAtaque = poderAtaque peaShooter * 2
 }
 
 --SunFlower
 sunFlower = Planta {
 puntosVida = 7,
-cantSoles = 1,
+solesProducidos = 1,
 poderAtaque = 0
 }
 
 --Nut
 nut = Planta {
 puntosVida = 100,
-cantSoles = 0,
+solesProducidos = 0,
 poderAtaque = 0
 }
 
@@ -82,8 +82,8 @@ nivelDeMuerteDe nombre = length nombre
 --a--Defino especialidad
 especialidad :: Planta -> String
 especialidad planta
- |cantSoles planta > 0 = "Proveedora"
- |poderAtaque planta * 2 > puntosVida planta = "Atacante"
+ |solesProducidos planta > 0 = "Proveedora"
+ |((*2) . poderAtaque $ planta) > (puntosVida planta) = "Atacante"
  |otherwise = "Defensiva"
  
 --b--Defino peligro
@@ -119,17 +119,14 @@ zombies = [zombieBase]
 }
 
 --3a--
-agregarPlantaALinea :: Planta -> LineaDeDefensa -> LineaDeDefensa
-agregarPlantaALinea planta linea = LineaDeDefensa{
-plantas = plantas linea ++ [planta],
-zombies = zombies linea
-}
+agregarPlanta :: Planta -> LineaDeDefensa -> LineaDeDefensa
+agregarPlanta planta linea = linea{plantas = agregarAFila (plantas linea) planta}
 
-agregarZombieALinea :: Zombie -> LineaDeDefensa -> LineaDeDefensa
-agregarZombieALinea zombie linea = LineaDeDefensa{
-plantas = plantas linea,
-zombies = zombies linea ++ [zombie]
-}
+agregarZombie :: Zombie -> LineaDeDefensa -> LineaDeDefensa
+agregarZombie zombie linea = linea{zombies = agregarAFila (zombies linea) zombie}
+
+agregarAFila :: [pz] -> pz -> [pz]
+agregarAFila plantasOZombies plantaOZombie =  [plantaOZombie] ++ plantasOZombies
 
 --3b--
 estaEnPeligro :: LineaDeDefensa -> Bool
@@ -180,19 +177,15 @@ lineaTiene2Plantas [] = False
 
 --5a-- Ataque de Planta a Zombie
 ataquePlanta :: Planta -> Zombie -> Zombie
-ataquePlanta planta zombie = Zombie {
+ataquePlanta planta zombie = zombie {
    nombre = drop (poderAtaque planta) (nombre zombie),
-   accesorios = accesorios zombie,
-   poderMordida = poderMordida zombie,
    nivelDeMuerte = nivelDeMuerteDe . drop (poderAtaque planta) $ nombre zombie
 }
 
 --5b-- Ataque de Zombie a Planta
 ataqueZombie :: Zombie -> Planta -> Planta
-ataqueZombie zombie planta = Planta{
-   puntosVida = plantaDañada (puntosVida planta) (poderMordida zombie),
-   cantSoles = cantSoles planta,
-   poderAtaque = poderAtaque planta
+ataqueZombie zombie planta = planta{
+   puntosVida = plantaDañada (puntosVida planta) (poderMordida zombie)
 }
 
 plantaDañada puntosVida poderMordida
