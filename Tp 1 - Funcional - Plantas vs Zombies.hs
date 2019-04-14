@@ -1,14 +1,12 @@
---Modelado genérico del tipo Planta
+--Modelado genérico del tipo Planta -- Puedo llegar al mismo resultado con multiples consturctores?
 data Planta = Planta{
-especie :: String,
 puntosVida :: Int,
 cantSoles :: Int,
 poderAtaque :: Int
-} deriving (Show)
+} deriving (Show,Eq)
 
 --peaShooter
 peaShooter = Planta {
-especie = "peaShooter",
 puntosVida = 5,
 cantSoles = 0,
 poderAtaque = 2
@@ -16,7 +14,6 @@ poderAtaque = 2
 
 --Repeater
 repeater = Planta {
-especie = "Repeater",
 puntosVida = puntosVida peaShooter,
 cantSoles = cantSoles peaShooter,
 poderAtaque = poderAtaque peaShooter * 2
@@ -24,7 +21,6 @@ poderAtaque = poderAtaque peaShooter * 2
 
 --SunFlower
 sunFlower = Planta {
-especie = "SunFlower",
 puntosVida = 7,
 cantSoles = 1,
 poderAtaque = 0
@@ -32,7 +28,6 @@ poderAtaque = 0
 
 --Nut
 nut = Planta {
-especie = "Nut",
 puntosVida = 100,
 cantSoles = 0,
 poderAtaque = 0
@@ -43,7 +38,7 @@ poderAtaque = 0
 data Zombie = Zombie {
 nombre :: String,
 accesorios :: [String],
-daño :: Int,
+poderMordida :: Int,
 nivelDeMuerte :: Int
 } deriving (Show)
 
@@ -51,32 +46,32 @@ nivelDeMuerte :: Int
 zombieBase = Zombie {
 nombre = "Zombie",
 accesorios = [],
-daño = 1,
-nivelDeMuerte = (nivelDeMuerteDe.nombre) zombieBase
+poderMordida = 1,
+nivelDeMuerte = nivelDeMuerteDe.nombre $ zombieBase
 }
 
 --Balloon Zombie
 balloonZombie = Zombie {
 nombre = "Pepe Colgado",
 accesorios = ["Globo"],
-daño = daño zombieBase,
-nivelDeMuerte = (nivelDeMuerteDe.nombre) balloonZombie
+poderMordida = poderMordida zombieBase,
+nivelDeMuerte = nivelDeMuerteDe.nombre $ balloonZombie
 }
 
 --Newspaper Zombie
-newsPaperZombie = Zombie {
+newspaperZombie = Zombie {
 nombre = "Beto el chismoso",
 accesorios = ["Diario"],
-daño = 2,
-nivelDeMuerte = (nivelDeMuerteDe.nombre) newsPaperZombie
+poderMordida = 2,
+nivelDeMuerte = nivelDeMuerteDe.nombre $ newspaperZombie
 }
 
 --Gargantuar
 gargantuar = Zombie {
 nombre = "Gargantuar Hulk Smash Puny God",
 accesorios = ["Poste", "Zombie Enano"],
-daño = 30,
-nivelDeMuerte = (nivelDeMuerteDe.nombre) gargantuar
+poderMordida = 30,
+nivelDeMuerte = nivelDeMuerteDe.nombre $ gargantuar
 }
 
 --Determinar Nivel de Muerte
@@ -88,12 +83,12 @@ nivelDeMuerteDe nombre = length nombre
 especialidad :: Planta -> String
 especialidad planta
  |cantSoles planta > 0 = "Proveedora"
- |poderAtaque planta *2 > puntosVida planta = "Atacante"
+ |poderAtaque planta * 2 > puntosVida planta = "Atacante"
  |otherwise = "Defensiva"
  
 --b--Defino peligro
 esPeligroso :: Zombie -> Bool
-esPeligroso zombie = (length.accesorios) zombie > 1 || nivelDeMuerte zombie > 10
+esPeligroso zombie = (length.accesorios $ zombie) > 1 || nivelDeMuerte zombie > 10
 
 --3--
 --Defino listas Plantas y Zombies
@@ -110,7 +105,7 @@ zombies = []
 
 linea2 = LineaDeDefensa{
 plantas = [peaShooter, peaShooter, sunFlower,nut],
-zombies = [zombieBase, newsPaperZombie]
+zombies = [zombieBase, newspaperZombie]
 }
 
 linea3 = LineaDeDefensa{
@@ -138,13 +133,13 @@ zombies = zombies linea ++ [zombie]
 
 --3b--
 estaEnPeligro :: LineaDeDefensa -> Bool
-estaEnPeligro linea = (poderTotalDeAtaqueDe linea < poderTotalDeMordiscosDe linea )|| (sonTodosZombiesPeligrososDe linea && hayUnZombieEn linea )
+estaEnPeligro linea = (poderTotalDeAtaqueDe linea < poderTotalDeMordiscosDe linea ) || (sonTodosZombiesPeligrososDe linea && hayUnZombieEn linea )
 
 poderTotalDeAtaqueDe :: LineaDeDefensa -> Int
-poderTotalDeAtaqueDe linea = sum.(map poderAtaque) $ (plantas linea)
+poderTotalDeAtaqueDe linea = sum.(map poderAtaque) $ plantas linea
 
 poderTotalDeMordiscosDe :: LineaDeDefensa -> Int
-poderTotalDeMordiscosDe linea = sum.(map daño) $ (zombies linea)
+poderTotalDeMordiscosDe linea = sum.(map poderMordida) $ zombies linea
 
 sonTodosZombiesPeligrososDe :: LineaDeDefensa -> Bool
 sonTodosZombiesPeligrososDe linea = all esPeligroso (zombies linea)
@@ -158,27 +153,48 @@ necesitaSerDefendida linea = all ((=="Proveedora").especialidad) (plantas linea)
 
 --3d--
 --Qué pasaría al consultar si una línea está en peligro si hubiera una cantidad infinita de zombies bases en la misma?
---Se entiende que el poder total de daño de los Zombies siempre seria mayor al poder de Ataque de las plantas, lo que significaría que la linea estaría 
+--Se entiende que el poder total de poderMordida de los Zombies siempre seria mayor al poder de Ataque de las plantas, lo que significaría que la linea estaría 
 --en peligro siempre, sin importar el valor de Poder de Ataque de las plantas
 
 --Qué pasaría al consultar si una línea con una cantidad infinita de PeaShooters necesita ser defendida? ¿Y con una cantidad infinita de Sunflowers?
---RTA: Con una cantidad infinita de PeaShooters los puntos de Ataque siempre superarian a los mordiscos, y la linea nunca estaría en peligro.
+--RTA: Con una cantidad infinita de PeaShooters los puntos de Ataque siempre superarian a los mordiscos, y la linea nunca estaría en peligro (al menos que todos
+--los zombies de la linea sean peligrosos).
 --RTA2: Con una cantidad infinita de SunFlowers los puntos de Ataque se mantendrian en 0 y la linea estaría en peligro si hay al menos un zombie en la misma.
 
 --4a--
-lineaMixta :: LineaDeDefensa -> Bool
-lineaMixta linea = esMixta (plantas linea) && lineaTiene2Plantas (plantas linea)
+esMixta :: LineaDeDefensa -> Bool
+esMixta linea = sonPlantasMixtas (plantas linea) && lineaTiene2Plantas (plantas linea)
 
 --Verifico si la lista de plantas es mixta
-esMixta :: [Planta] -> Bool
-esMixta [x] = True
-esMixta [] = True
-esMixta (x:y:ys)
- |especialidad x == especialidad y = False
- |otherwise = esMixta (y:ys)
+sonPlantasMixtas :: [Planta] -> Bool
+sonPlantasMixtas [planta] = True
+sonPlantasMixtas (planta1:planta2:plantas)
+ |especialidad planta1 == especialidad planta2 = False
+ |otherwise = sonPlantasMixtas (planta2:plantas)
 
 --Verifico si la lista tiene al menos 2 plantas
 lineaTiene2Plantas :: [Planta] -> Bool
-lineaTiene2Plantas (x:y:ys) = True
-lineaTiene2Plantas [x] = False
+lineaTiene2Plantas (planta1:planta2:plantas) = True
+lineaTiene2Plantas [planta] = False
 lineaTiene2Plantas [] = False
+
+--5a-- Ataque de Planta a Zombie
+ataquePlanta :: Planta -> Zombie -> Zombie
+ataquePlanta planta zombie = Zombie {
+   nombre = drop (poderAtaque planta) (nombre zombie),
+   accesorios = accesorios zombie,
+   poderMordida = poderMordida zombie,
+   nivelDeMuerte = nivelDeMuerteDe . drop (poderAtaque planta) $ nombre zombie
+}
+
+--5b-- Ataque de Zombie a Planta
+ataqueZombie :: Zombie -> Planta -> Planta
+ataqueZombie zombie planta = Planta{
+   puntosVida = plantaDañada (puntosVida planta) (poderMordida zombie),
+   cantSoles = cantSoles planta,
+   poderAtaque = poderAtaque planta
+}
+
+plantaDañada puntosVida poderMordida
+   |puntosVida - poderMordida <=0 = 0
+   |otherwise = puntosVida - poderMordida
