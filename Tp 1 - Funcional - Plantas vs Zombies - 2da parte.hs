@@ -1,6 +1,5 @@
 import Text.Show.Functions
 
---Modelado generico del tipo Zombie
 data Zombie = Zombie {
    nombre :: String,
    accesorios :: [String],
@@ -8,18 +7,24 @@ data Zombie = Zombie {
    nivelDeMuerte :: Int
 } deriving (Show)
 
---Modelado genérico del tipo Planta -- Puedo llegar al mismo resultado con multiples consturctores?
 data Planta = Planta{
+   especie :: String,
    puntosVida :: Int,
    solesProducidos :: Int,
    poderAtaque :: Int,
    ataque :: (Zombie -> Zombie)
 } deriving (Show)
 
+data LineaDeDefensa = LineaDeDefensa{
+plantas :: [Planta],
+zombies :: [Zombie]
+} deriving (Show)
+
 data Jardin = Jardin {lineas :: [LineaDeDefensa] } deriving (Show)
 
 --peaShooter
 peaShooter = Planta {
+   especie = "PeaShooter",
    puntosVida = 5,
    solesProducidos = 0,
    poderAtaque = 2,
@@ -28,6 +33,7 @@ peaShooter = Planta {
 
 --Repeater
 repeater = Planta {
+   especie = "Repeater",
    puntosVida = puntosVida peaShooter,
    solesProducidos = solesProducidos peaShooter,
    poderAtaque = poderAtaque peaShooter * 2,
@@ -36,14 +42,20 @@ repeater = Planta {
 
 --SunFlower
 sunFlower = Planta {
+   especie = "SunFlower",
    puntosVida = 7,
    solesProducidos = 1,
    poderAtaque = 0,
    ataque = ataquePlanta sunFlower
 }
 
+sunFlowerCustom solesProducidos
+   |(>0) solesProducidos = sunFlower {solesProducidos = solesProducidos}
+   |otherwise = sunFlower {solesProducidos = 0}
+
 --Nut
 nut = Planta {
+   especie = "Nut",
    puntosVida = 100,
    solesProducidos = 0,
    poderAtaque = 0,
@@ -52,6 +64,7 @@ nut = Planta {
 
 --Cactus
 cactus = Planta {
+   especie = "Cactus",
    puntosVida = 5,
    solesProducidos = 0,
    poderAtaque = 0,
@@ -78,7 +91,7 @@ balloonZombie = Zombie {
 newspaperZombie = Zombie {
    nombre = "Beto el chismoso",
    accesorios = ["Diario"],
-   poderMordida = length.accesorios $ newspaperZombie, --MODIFICAR - ES CANTIDAD DE LETRAS
+   poderMordida = length.concat.accesorios $ newspaperZombie,
    nivelDeMuerte = nivelDeMuerteDe.nombre $ newspaperZombie
 }
 
@@ -111,11 +124,6 @@ esPeligroso :: Zombie -> Bool
 esPeligroso zombie = (length.accesorios $ zombie) > 1 || nivelDeMuerte zombie > 10
 
 --3--
---Defino listas Plantas y Zombies
-data LineaDeDefensa = LineaDeDefensa{
-plantas :: [Planta],
-zombies :: [Zombie]
-} deriving (Show)
 
 --Genero las lineas
 linea1 = LineaDeDefensa{
@@ -169,14 +177,7 @@ necesitaSerDefendida :: LineaDeDefensa -> Bool
 necesitaSerDefendida linea = all ((=="Proveedora").especialidad) (plantas linea)
 
 --3d--
---Qué pasaría al consultar si una línea está en peligro si hubiera una cantidad infinita de zombies bases en la misma?
---Se entiende que el poder total de poderMordida de los Zombies siempre seria mayor al poder de Ataque de las plantas, lo que significaría que la linea estaría 
---en peligro siempre, sin importar el valor de Poder de Ataque de las plantas
-
---Qué pasaría al consultar si una línea con una cantidad infinita de PeaShooters necesita ser defendida? ¿Y con una cantidad infinita de Sunflowers?
---RTA: Con una cantidad infinita de PeaShooters los puntos de Ataque siempre superarian a los mordiscos, y la linea nunca estaría en peligro (al menos que todos
---los zombies de la linea sean peligrosos).
---RTA2: Con una cantidad infinita de SunFlowers los puntos de Ataque se mantendrian en 0 y la linea estaría en peligro si hay al menos un zombie en la misma.
+--REHACER
 
 --4a--
 esMixta :: LineaDeDefensa -> Bool
@@ -196,11 +197,6 @@ lineaTiene2Plantas [planta] = False
 lineaTiene2Plantas [] = False
 
 --5a-- Ataque de Planta a Zombie
-{-ataquePlanta :: Int -> Zombie -> Zombie
-ataquePlanta valor zombie = zombie {
-   nombre = drop valor (nombre zombie),
-   nivelDeMuerte = nivelDeMuerteDe . drop valor $ nombre zombie
-}-}
 
 ataquePlanta :: Planta -> Zombie -> Zombie
 ataquePlanta planta zombie = zombie {
@@ -219,7 +215,7 @@ plantaDanada puntosVida poderMordida
    |otherwise = puntosVida - poderMordida
    
 --2da entrega
---1er punto--
+--1--
 ataqueNut :: Zombie -> Zombie
 ataqueNut zombie
    |(poderMordida zombie) > 1 = zombie{poderMordida = (poderMordida zombie) - 1}
@@ -227,9 +223,10 @@ ataqueNut zombie
    
 ataqueCactus :: Zombie -> Zombie
 ataqueCactus zombie
-   |elem "Globo" (accesorios zombie) = zombie{accesorios = quitar "Globo" (accesorios zombie)}
+   |elem "Globo" (accesorios zombie) = zombie{accesorios = quitar "Globo" (accesorios zombie),
+                                              poderMordida = poderBalloon (quitar "Globo" (accesorios zombie))}
    |otherwise = zombie
-   
+
 quitar _ [] = []
 quitar e (x:xs)
    |e == x = xs
@@ -239,28 +236,34 @@ poderBalloon :: [String] -> Int
 poderBalloon accesorios
    |elem "Globo" accesorios = 5
    |otherwise = 2
-   
-ataqueNewspaper :: [String] -> Int
-ataqueNewspaper = sum.map length
 
---3er punto--
+--3--
 cumplenPlantas :: (Planta -> Bool) -> LineaDeDefensa -> [Planta]
 cumplenPlantas condicion linea = filter condicion (plantas linea)
 
+--3b--
+--i			cumplenPlantas ((>0).solesProducidos) linea3
+--ii		cumplenPlantas (\x -> ((=='P').head.especie $x) && ((>4).puntosVida $x )) linea2
+--iii		all (==(especie.head.plantas $linea2)) (map especie . cumplenPlantas (\x -> (solesProducidos x > 0) && (puntosVida x >0) ) $linea2)
 
---4to punto--
+
+--4--
 miJardin :: Jardin
 miJardin = Jardin {lineas = [linea1,linea2,linea3,linea4]}
 
 type Potenciador = (Jardin -> Jardin)
 navidadZombie accesorio jardin = jardin {lineas = map (agregarAccesorioLinea accesorio) (lineas jardin)}
 catenaccio jardin = jardin {lineas = map (agregarPlanta nut) (lineas jardin)}
---riego aumentoVida criterio jardin =
+riego vida criterio jardin = jardin {lineas = map (aumentarVidaSegunLinea vida criterio) (lineas jardin)}
 
 aumentarVida :: Int -> Planta -> Planta
-aumentarVida aumentoVida planta = planta {puntosVida = puntosVida planta + aumentoVida}
+aumentarVida vida planta = planta {puntosVida = puntosVida planta + vida}
 
---aumentarVidaSegun aumentoVida criterio plantas = (map aumentarVida) (filter criterio plantas)
+aumentarVidaSegun :: Int -> (Planta -> Bool) -> [Planta] -> [Planta]
+aumentarVidaSegun vida criterio plantas = map (aumentarVida vida) (filter criterio plantas)
+
+aumentarVidaSegunLinea :: Int -> (Planta -> Bool) -> LineaDeDefensa -> LineaDeDefensa
+aumentarVidaSegunLinea vida criterio linea = linea {plantas = aumentarVidaSegun vida criterio (plantas linea)}
 
 agregarAccesorioLinea :: String -> LineaDeDefensa -> LineaDeDefensa
 agregarAccesorioLinea accesorio linea = linea {zombies = map (agregarAccesorioZombie accesorio) (zombies linea) }
@@ -273,19 +276,40 @@ potenciar jardin [] = jardin
 potenciar jardin (p:ps) = flip potenciar ps . p $jardin
 
 --5to punto--
+--a--
 mejorValorada criterio planta1 planta2
    |criterio planta1 >= criterio planta2 = planta1
    |otherwise = planta2
-   
+
+--b--
 mostValuablePlant criterio plantas = foldl1 (mejorValorada criterio) plantas
 
+--c--
+--mostValuablePlant (puntosVida) (concatMap plantas (lineas miJardin))
+
 --6to punto--
-ataqueMasivo [] zombie = zombie
-ataqueMasivo (p:ps) zombie = ataqueMasivo ps . (ataquePlanta p) $zombie
+todasAUno :: [Planta] -> [Zombie] -> [Zombie]
+todasAUno [] zombies = zombies
+todasAUno _ [] = []
+todasAUno (p:ps) (z:zs)
+   |(==0).nivelDeMuerte.ataquePlanta p $z = todasAUno ps zs
+   |otherwise = todasAUno ps ((ataquePlanta p z):zs)
 
-atacaUltima plantas zombie = init plantas ++ [ataqueZombie zombie (last plantas)]
+todasAUnoLinea linea = linea {zombies = todasAUno (plantas linea) (zombies linea)}   
+   
+atacaUltima [] _ = []
+atacaUltima plantas [] = plantas
+atacaUltima plantas (z:zs)
+   |puntosVida (ataqueZombie z $last plantas) == 0 = init plantas
+   |otherwise = init plantas ++ [ataqueZombie z (last plantas)]
 
---ataqueCompleto linea = atacaUltima . ataqueMasivo plantas linea zombies linea
---ataqueMasivo linea = ataqueCompleto . ataqueCompleto 
---theZombiesAteYourBrains jardin = contabilizadorPlantas lineas jardin = 0
+atacaUltimaLinea linea = linea {plantas = atacaUltima (plantas linea) (zombies linea)}
 
+ataqueCompleto = atacaUltimaLinea . todasAUnoLinea
+
+ataqueMasivo linea
+   |length (zombies linea) == 0 || length (plantas linea) == 0 = linea
+   |otherwise = ataqueMasivo . ataqueCompleto $linea
+
+   
+theZombiesAteYourBrains jardin = any (==0) (filter (==0) (map length (map plantas (map ataqueMasivo (lineas jardin)))))

@@ -1,0 +1,282 @@
+Punto 1
+
+Consultar el poder de ataque de un PeaShooter
+*Main> poderAtaque peaShooter
+2
+
+
+Consultar el poder de ataque de un Repeater
+*Main> poderAtaque repeater
+4
+
+
+Consultar la cantidad de soles que otorga un Sunflower
+*Main> solesProducidos (sunFlowerCustom 10)
+10
+*Main> solesProducidos (sunFlowerCustom 100000)
+100000
+*Main> solesProducidos (sunFlowerCustom (-10))
+0
+*Main> solesProducidos (sunFlowerCustom 0)
+0
+
+
+Consultar cuántos soles da un Nut
+*Main> solesProducidos nut
+0
+
+
+Determinar cuántos accesorios tiene un Ballon Zombie.
+*Main> length.accesorios $balloonZombie
+1
+
+
+Consultar el poder de mordida de un Zombie Base
+*Main> poderMordida zombieBase
+1
+
+
+Consultar el poder de mordida de un Newspaper Zombie
+*Main> poderMordida newspaperZombie
+6
+
+
+Determinar el nivel de muerte de un Gargantuar
+*Main> nivelDeMuerte gargantuar
+30
+
+Consultar el poder de mordida de un Gargantuar
+*Main> poderMordida gargantuar
+32
+
+Punto 2
+
+Determinar la especialidad de un Nut 
+*Main> especialidad nut
+"Defensiva"
+
+
+Determinar la especialidad de un Sunflower
+*Main> especialidad sunFlower
+"Proveedora"
+
+
+Determinar la especialidad de un Repeater
+*Main> especialidad repeater
+"Atacante"
+
+
+Saber si un Zombie Base es peligroso
+*Main> esPeligroso zombieBase
+False
+
+
+Saber si un Gargantuar es peligroso
+*Main> esPeligroso gargantuar
+True
+
+Punto 3
+Tras agregar una planta a línea 1, determinar la cantidad de plantas de la línea
+*Main> length.plantas.agregarPlanta nut $linea1
+4
+
+
+Tras agregar un zombie a línea 2, determinar la cantidad de zombies
+*Main> length.zombies.agregarZombie zombieBase $linea2
+3
+
+
+Saber si la línea 1 está en peligro
+*Main> estaEnPeligro linea1
+False
+
+
+Saber si la línea 3 está en peligro
+*Main> estaEnPeligro linea3
+True
+
+
+Saber si la línea 1 necesita ser defendida
+*Main> necesitaSerDefendida linea1
+True
+
+
+Saber si la línea 2 necesita ser defendida
+*Main> necesitaSerDefendida linea2
+False
+
+Punto 4
+
+Saber si la línea 2 es mixta
+*Main> esMixta linea2
+False
+
+
+Saber si la línea 3 es mixta
+*Main> esMixta linea3
+True
+
+
+Saber si la línea 4 es mixta
+*Main> esMixta linea4
+False
+
+Punto 5
+
+Luego de un ataque de un PeaShooter a un Gargantuar, saber el nivel de muerte del Gargantuar
+*Main> nivelDeMuerte . ataquePlanta peaShooter $gargantuar
+28
+
+
+Luego de un ataque de un Sunflower a un Newspaper Zombie, saber el nivel de muerte del mismo
+*Main> nivelDeMuerte . ataquePlanta sunFlower $newspaperZombie
+16
+
+
+Luego de 2 ataques de un Repeater a un Zombie Base, saber el nivel de muerte del zombie
+*Main> nivelDeMuerte . ataquePlanta repeater . ataquePlanta repeater $zombieBase
+0
+
+
+Luego del ataque de un Gargantuar a un Nut, saber la vida del Nut
+*Main> puntosVida . ataqueZombie gargantuar $nut
+68
+
+
+Luego del ataque de un Balloon Zombie a un Sunflower, el nivel de vida del Sunflower.
+*Main> puntosVida . ataqueZombie balloonZombie $sunFlower
+2
+
+
+Luego del ataque de un Cactus a un Balloon Zombie, la cantidad de accesorios del Balloon Zombie.
+*Main> length . accesorios . ataqueCactus $balloonZombie
+0
+
+
+Luego del ataque de un Cactus a un Balloon Zombie, y un posterior ataque de ese mismo Balloon Zombie a un Sunflower, el nivel de vida del Sunflower.
+*Main> puntosVida . ataqueZombie (ataqueCactus $balloonZombie) $sunFlower
+5
+
+
+Luego de un ataque de un Cactus a un Newspaper Zombie, la cantidad de accesorios del Newspaper Zombie.
+*Main> length.accesorios.ataqueCactus $newspaperZombie
+1
+
+
+Luego del ataque de un Newspaper Zombie a un Repeater, la especialidad del Repeater
+*Main> especialidad . ataqueZombie newspaperZombie $repeater
+"Atacante"
+
+
+Luego del ataque de un PeaShooter a un Zombie Base, saber la inicial del nombre del zombie
+*Main> head.nombre.ataquePlanta peaShooter $zombieBase
+'m'
+
+
+Luego de un ataque de un Cactus a un Gargantuar, saber la inicial del Gargantuar.
+*Main> head.nombre.ataqueCactus $gargantuar
+'G'
+
+
+Casos de Prueba - Entrega 2
+Punto 3
+
+La cantidad de plantas que otorgan soles en la línea 3.
+*Main> length  (filter ((>0).solesProducidos) (plantas linea3))
+1
+
+
+Las plantas de una especie que empiece con P y tengan más de 4 de vida en la línea 2.
+*Main> cumplenPlantas (\x -> ((=='P').head.especie $x) && ((>4).puntosVida $x )) linea2
+[Planta {especie = "PeaShooter", puntosVida = 5, solesProducidos = 0, poderAtaque = 2, ataque = <function>},Planta {especie = "PeaShooter", puntosVida = 5, solesProducidos = 0, poderAtaque = 2, ataque = <function>}]
+
+
+Si todas las plantas con vida que otorgan soles de la línea 2 son de la misma especie que la primera de la línea.
+*Main> all (==(especie.head.plantas $linea2)) (map especie . cumplenPlantas (\x -> (solesProducidos x > 0) && (puntosVida x >0) ) $linea2)
+False
+
+Punto 4
+
+En miJardin luego de una Navidad Zombie con “Cono de plástico”, saber la cantidad de artículos del primer zombie de la tercera línea.
+*Main> length.accesorios.head.zombies . (!!) (lineas (potenciar miJardin [navidadZombie "Cono de Plastico"])) $2
+3
+
+
+En miJardin luego de una Navidad Zombie con “Cono de plástico”, saber el daño del segundo zombie de la segunda linea.
+*Main> poderMordida.(!!1).zombies . (!!) (lineas (potenciar miJardin [navidadZombie "Cono de Plastico"])) $1
+6
+*Main> (!!1).zombies . (!!) (lineas (potenciar miJardin [navidadZombie "Cono de Plastico"])) $1
+Zombie {nombre = "Beto el chismoso", accesorios = ["Diario","Cono de Plastico"], poderMordida = 6, nivelDeMuerte = 16}
+FAIL HAY QUE ARREGLAR EL RECALCULO DEL PODERMORDIDA
+
+
+En miJardin luego de un Catenaccio la cantidad de plantas de la cuarta línea.
+*Main> length.plantas . (!!) (lineas (potenciar miJardin [catenaccio])) $3
+2
+
+
+En miJardin luego de un Catenaccio la especie de la última planta de la primera línea.
+*Main> especie.last.plantas . (!!) (lineas (potenciar miJardin [catenaccio])) $0
+"Nut"
+
+
+En miJardin luego de un Riego de potencia 5 y condición de tener vida impar, saber la cantidad de plantas con vida par en la primera línea.
+*Main> length.filter (even.puntosVida).plantas . (!!) (lineas (potenciar miJardin [riego 5 (odd.puntosVida)])) $0
+3
+
+
+En miJardin luego de un Riego de potencia 500 y condición de tener vida menor a 100, saber la cantidad de plantas con vida mayor a 100 en la segunda línea.
+*Main> length.filter ((>100).puntosVida).plantas . (!!) (lineas (potenciar miJardin [riego 500 ((<100).puntosVida)])) $1
+3
+
+Punto 5
+
+Comparar un PeaShooter y un Nut según longitud del nombre.
+*Main> mejorValorada (length.especie) peaShooter nut
+Planta {especie = "PeaShooter", puntosVida = 5, solesProducidos = 0, poderAtaque = 2, ataque = <function>}
+
+
+Comparar un PeaShooter y un Nut según vida.
+*Main> mejorValorada (puntosVida) peaShooter nut
+Planta {especie = "Nut", puntosVida = 100, solesProducidos = 0, poderAtaque = 0, ataque = <function>}
+
+
+Saber la MVP de la línea 2 según vida.
+*Main> mostValuablePlant (puntosVida) (plantas linea2)
+Planta {especie = "Nut", puntosVida = 100, solesProducidos = 0, poderAtaque = 0, ataque = <function>}
+
+
+Saber la MVP de la línea 2 según soles que otorga.
+*Main> mostValuablePlant (solesProducidos) (plantas linea2)
+Planta {especie = "SunFlower", puntosVida = 7, solesProducidos = 1, poderAtaque = 0, ataque = <function>}
+
+Punto 6
+
+Luego de un ataque completo en la línea 3, saber cuántas plantas quedan en la misma.
+*Main> length . plantas . ataqueCompleto $linea3
+1
+
+
+Luego de un ataque completo en la línea 2, saber el poder de ataque de su primer zombie.
+*Main> poderMordida . head . zombies . ataqueCompleto $linea2
+1
+
+
+Luego de un ataque completo en la línea 2, saber el poder de ataque de su segundo zombie.
+*Main> poderMordida . (!!1) . zombies . ataqueCompleto $linea2
+6
+
+
+Luego de un ataque masivo en la línea 3, saber cuántas plantas quedan en la misma.
+*Main> length . plantas . ataqueMasivo $linea3
+0
+
+
+Luego de un ataque masivo en la línea 1, saber cuántas plantas quedan.
+*Main> length . plantas . ataqueMasivo $linea1
+3
+
+
+Saber si los zombies se comieron nuestro cerebro en miJardin.
+*Main> theZombiesAteYourBrains miJardin
+True
