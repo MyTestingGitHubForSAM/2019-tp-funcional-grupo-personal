@@ -11,13 +11,13 @@ Consultar el poder de ataque de un Repeater
 
 
 Consultar la cantidad de soles que otorga un Sunflower
-*Main> solesProducidos (sunFlowerCustom 10)
+*Main> solesProducidos (sunFlower 10)
 10
-*Main> solesProducidos (sunFlowerCustom 100000)
-100000
-*Main> solesProducidos (sunFlowerCustom (-10))
-0
-*Main> solesProducidos (sunFlowerCustom 0)
+*Main> solesProducidos (sunFlower 1000)
+1000
+*Main> solesProducidos (sunFlower (-10))
+-10
+*Main> solesProducidos (sunFlower 0)
 0
 
 
@@ -57,7 +57,7 @@ Determinar la especialidad de un Nut
 
 
 Determinar la especialidad de un Sunflower
-*Main> especialidad sunFlower
+*Main> especialidad (sunFlower 1)
 "Proveedora"
 
 
@@ -129,7 +129,7 @@ Luego de un ataque de un PeaShooter a un Gargantuar, saber el nivel de muerte de
 
 
 Luego de un ataque de un Sunflower a un Newspaper Zombie, saber el nivel de muerte del mismo
-*Main> nivelDeMuerte . ataquePlanta sunFlower $newspaperZombie
+*Main> nivelDeMuerte . ataquePlanta (sunFlower 1) $newspaperZombie
 16
 
 
@@ -144,22 +144,22 @@ Luego del ataque de un Gargantuar a un Nut, saber la vida del Nut
 
 
 Luego del ataque de un Balloon Zombie a un Sunflower, el nivel de vida del Sunflower.
-*Main> puntosVida . ataqueZombie balloonZombie $sunFlower
+*Main> puntosVida . ataqueZombie balloonZombie $sunFlower 1
 2
 
 
 Luego del ataque de un Cactus a un Balloon Zombie, la cantidad de accesorios del Balloon Zombie.
-*Main> length . accesorios . ataqueCactus $balloonZombie
+*Main> length . accesorios . (ataque cactus) $balloonZombie
 0
 
 
 Luego del ataque de un Cactus a un Balloon Zombie, y un posterior ataque de ese mismo Balloon Zombie a un Sunflower, el nivel de vida del Sunflower.
-*Main> puntosVida . ataqueZombie (ataqueCactus $balloonZombie) $sunFlower
+*Main> puntosVida . ataqueZombie ((ataque cactus) balloonZombie) $sunFlower 1
 5
 
 
 Luego de un ataque de un Cactus a un Newspaper Zombie, la cantidad de accesorios del Newspaper Zombie.
-*Main> length.accesorios.ataqueCactus $newspaperZombie
+*Main> length . accesorios . (ataque cactus) $newspaperZombie
 1
 
 
@@ -174,7 +174,7 @@ Luego del ataque de un PeaShooter a un Zombie Base, saber la inicial del nombre 
 
 
 Luego de un ataque de un Cactus a un Gargantuar, saber la inicial del Gargantuar.
-*Main> head.nombre.ataqueCactus $gargantuar
+*Main> head.nombre. (ataque cactus) $gargantuar
 'G'
 
 
@@ -204,10 +204,7 @@ En miJardin luego de una Navidad Zombie con “Cono de plástico”, saber la ca
 
 En miJardin luego de una Navidad Zombie con “Cono de plástico”, saber el daño del segundo zombie de la segunda linea.
 *Main> poderMordida.(!!1).zombies . (!!) (lineas (potenciar miJardin [navidadZombie "Cono de Plastico"])) $1
-6
-*Main> (!!1).zombies . (!!) (lineas (potenciar miJardin [navidadZombie "Cono de Plastico"])) $1
-Zombie {nombre = "Beto el chismoso", accesorios = ["Diario","Cono de Plastico"], poderMordida = 6, nivelDeMuerte = 16}
-FAIL HAY QUE ARREGLAR EL RECALCULO DEL PODERMORDIDA
+22
 
 
 En miJardin luego de un Catenaccio la cantidad de plantas de la cuarta línea.

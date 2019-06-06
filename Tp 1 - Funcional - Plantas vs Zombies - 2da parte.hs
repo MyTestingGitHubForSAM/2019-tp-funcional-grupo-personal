@@ -22,7 +22,7 @@ zombies :: [Zombie]
 
 data Jardin = Jardin {lineas :: [LineaDeDefensa] } deriving (Show)
 
---peaShooter
+--Plantas
 peaShooter = Planta {
    especie = "PeaShooter",
    puntosVida = 5,
@@ -31,7 +31,6 @@ peaShooter = Planta {
    ataque = ataquePlanta peaShooter
 }
 
---Repeater
 repeater = Planta {
    especie = "Repeater",
    puntosVida = puntosVida peaShooter,
@@ -40,20 +39,17 @@ repeater = Planta {
    ataque = ataquePlanta repeater
 }
 
---SunFlower
-sunFlower = Planta {
+sunFlower soles = Planta {
    especie = "SunFlower",
    puntosVida = 7,
-   solesProducidos = 1,
+   solesProducidos = soles,
    poderAtaque = 0,
-   ataque = ataquePlanta sunFlower
+   ataque = ataquePlanta.sunFlower $soles
 }
 
-sunFlowerCustom solesProducidos
-   |(>0) solesProducidos = sunFlower {solesProducidos = solesProducidos}
-   |otherwise = sunFlower {solesProducidos = 0}
+solesProducidosBase :: Int
+solesProducidosBase = 1
 
---Nut
 nut = Planta {
    especie = "Nut",
    puntosVida = 100,
@@ -62,7 +58,6 @@ nut = Planta {
    ataque = ataqueNut
 }
 
---Cactus
 cactus = Planta {
    especie = "Cactus",
    puntosVida = 5,
@@ -71,7 +66,7 @@ cactus = Planta {
    ataque = ataqueCactus
 }
 
---Zombie Base
+--Zombies
 zombieBase = Zombie {
    nombre = "Zombie",
    accesorios = [],
@@ -79,7 +74,6 @@ zombieBase = Zombie {
    nivelDeMuerte = nivelDeMuerteDe.nombre $ zombieBase
 }
 
---Balloon Zombie
 balloonZombie = Zombie {
    nombre = "Pepe Colgado",
    accesorios = ["Globo"],
@@ -87,7 +81,6 @@ balloonZombie = Zombie {
    nivelDeMuerte = nivelDeMuerteDe.nombre $ balloonZombie
 }
 
---Newspaper Zombie
 newspaperZombie = Zombie {
    nombre = "Beto el chismoso",
    accesorios = ["Diario"],
@@ -95,17 +88,12 @@ newspaperZombie = Zombie {
    nivelDeMuerte = nivelDeMuerteDe.nombre $ newspaperZombie
 }
 
---Gargantuar
 gargantuar = Zombie {
    nombre = "Gargantuar Hulk Smash Puny God",
    accesorios = ["Poste", "Zombie Enano"],
    poderMordida = (+) 30.length.accesorios $ gargantuar,
    nivelDeMuerte = nivelDeMuerteDe.nombre $ gargantuar
 }
-
---Ejemplos de listas de zombies
-zombiesLista :: [Zombie]
-zombiesLista = [zombieBase, newspaperZombie]
 
 --Determinar Nivel de Muerte
 nivelDeMuerteDe :: String -> Int
@@ -127,17 +115,17 @@ esPeligroso zombie = (length.accesorios $ zombie) > 1 || nivelDeMuerte zombie > 
 
 --Genero las lineas
 linea1 = LineaDeDefensa{
-plantas = [sunFlower, sunFlower, sunFlower],
+plantas = [sunFlower solesProducidosBase, sunFlower solesProducidosBase, sunFlower solesProducidosBase],
 zombies = []
 }
 
 linea2 = LineaDeDefensa{
-plantas = [peaShooter, peaShooter, sunFlower,nut],
+plantas = [peaShooter, peaShooter, sunFlower solesProducidosBase,nut],
 zombies = [zombieBase, newspaperZombie]
 }
 
 linea3 = LineaDeDefensa{
-plantas = [sunFlower, peaShooter],
+plantas = [sunFlower solesProducidosBase, peaShooter],
 zombies = [gargantuar,zombieBase,zombieBase]
 }
 
@@ -269,8 +257,15 @@ agregarAccesorioLinea :: String -> LineaDeDefensa -> LineaDeDefensa
 agregarAccesorioLinea accesorio linea = linea {zombies = map (agregarAccesorioZombie accesorio) (zombies linea) }
 
 agregarAccesorioZombie :: String -> Zombie -> Zombie
-agregarAccesorioZombie accesorio zombie = zombie {accesorios = accesorios zombie ++ [accesorio]}
+agregarAccesorioZombie accesorio zombie = zombie {accesorios = accesorios zombie ++ [accesorio],
+                                                  poderMordida = calcularPoderMordida zombie accesorio}
 
+calcularPoderMordida zombie accesorio
+   | nombre zombie == nombre zombieBase = 1
+   | nombre zombie == nombre balloonZombie = poderBalloon . (++) (accesorios zombie)  $[accesorio]
+   | nombre zombie == nombre newspaperZombie = length.concat.(++) (accesorios zombie) $[accesorio]
+   | nombre zombie == nombre gargantuar = (+)30.length.(++) (accesorios zombie) $[accesorio]
+   
 potenciar :: Jardin -> [Potenciador] -> Jardin
 potenciar jardin [] = jardin
 potenciar jardin (p:ps) = flip potenciar ps . p $jardin
