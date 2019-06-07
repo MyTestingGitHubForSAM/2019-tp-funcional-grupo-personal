@@ -164,9 +164,6 @@ hayUnZombieEn linea = (>0).length $ (zombies linea)
 necesitaSerDefendida :: LineaDeDefensa -> Bool
 necesitaSerDefendida linea = all ((=="Proveedora").especialidad) (plantas linea)
 
---3d--
---REHACER
-
 --4a--
 esMixta :: LineaDeDefensa -> Bool
 esMixta linea = sonPlantasMixtas (plantas linea) && lineaTiene2Plantas (plantas linea)
